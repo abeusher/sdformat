@@ -1,0 +1,10 @@
+stepCount:200000
+
+inputFilename: "input.txt"
+outputFilename: "output.txt"
+
+input:
+  filename: "input_file.txt"
+
+output:
+  filename: "output_file.txt"
