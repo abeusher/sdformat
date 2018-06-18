@@ -1,4 +1,4 @@
 stepCount:200000
 
-inputFilename: "sample_people2018.tsv"
-outputFilename: "output_people2018.tsv"
+inputFilename: "/Users/abeusher/code/sdformat/sample_people2018.tsv"
+outputFilename: "/Users/abeusher/code/sdformat/output_people2018.tsv"

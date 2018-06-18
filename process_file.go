@@ -18,7 +18,6 @@ import (
 This is fun :)
 
 TODO:
-Create SdFormat struct
 Create method to make a 'new' SdFormat struct
 Create method to populate SdFormat struct
 Create method to compute geohash9 with given SdFormat object
@@ -103,7 +102,7 @@ func init() {
 	//global configuration of variables
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	configFile, err := os.Open("config.yml")
+	configFile, err := os.Open("/Users/abeusher/code/sdformat/config.yml")
 	viper.ReadConfig(configFile)
 	if err != nil {
 		logrus.Fatal("Failed to read config file")
@@ -167,23 +166,26 @@ func processLine(inputLine string) (outputLine string) {
 	//logrus.Debug(inputLine)
 	parts := strings.Split(inputLine, ",")
 	numberOfParts := len(parts)
+	fmt.Println("numberOfParts", numberOfParts)
 	//logrus.Info("Number of parts: ", numberOfParts)
 	if numberOfParts != expectedNumberOfParts {
 		return outputLine
 	}
 	//partsSlice := parts[:]
-	processNameAddress(parts)
-	processGeoHousehold(parts)
-	processAgePhoneEducation(parts)
-	processBusinessOwnerDataLoaded(parts)
+	/*
+		processNameAddress(parts)
+		processGeoHousehold(parts)
+		processAgePhoneEducation(parts)
+		processBusinessOwnerDataLoaded(parts)
+	*/
 	return outputLine
 }
 
 func processFile() {
-	//TODO: remove this once the YAML parsing is working
-	inputFile = "data/2017_4_USA_Cons_LF_DC_0.csv"
-	stepCount = 25000
+	inputFile := "/Users/abeusher/code/sdformat/sample_people2018.tsv"
+	outputFile := "/Users/abeusher/code/sdformat/output_people2018.tsv"
 	inFile, err := os.Open(inputFile)
+	logrus.Info("Processing inputFile:", inputFile)
 	startTime := time.Now()
 	if err != nil {
 		logrus.Fatal(err)
@@ -212,7 +214,7 @@ func processFile() {
 }
 
 func main() {
-	logrus.Debug("Running main() in selectphone_processing")
+	logrus.Debug("Running main() in process_file.go")
 	processFile()
 	logrus.Info("All done.")
 }
