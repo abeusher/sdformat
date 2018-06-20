@@ -35,113 +35,6 @@ cellphone,email1,email2,education,business_owner_status,conservative_political_d
 liberal_political_donor,veterans_donor,do_not_call_list,timezone,birth_year,date_updated'.upper().replace(',','\t')
 */
 
-//SdFormat is the struct for handing input data
-type SdFormat struct {
-	uniqueID                   string
-	title                      string
-	firstName                  string
-	initial                    string
-	lastName                   string
-	address1                   string
-	address2                   string
-	city                       string
-	state                      string
-	zipcode                    string
-	zipcode4                   string
-	countyName                 string
-	geoLevel                   string
-	latitude                   string
-	longitude                  string
-	geohash9                   string
-	geohash5                   string
-	msa                        string
-	cbsa                       string
-	fipsState                  string
-	fipsCounty                 string
-	censusTract                string
-	censusBlockGroup           string
-	censusBlock                string
-	fullCensusBlockID          string
-	firstInHousehold           string
-	childPresent               string
-	age                        string
-	homePhone                  string
-	estimatedIncome            string
-	lengthOfResidence          string
-	dwellingType               string
-	homeownerType              string
-	gender                     string
-	maritalStatus              string
-	estimatedSealth            string
-	estimatedHomeValue         string
-	cellphone                  string
-	email1                     string
-	email2                     string
-	education                  string
-	businessOwnerStatus        string
-	conservativePoliticalDonor string
-	liberalPoliticalDonor      string
-	veteransDonor              string
-	doNotCallList              string
-	timezone                   string
-	birthYear                  string
-	dateUpdated                string
-}
-
-//Populates an SdFormat struct using an array of length 49 with all string values as inputs
-func (sd *SdFormat) PopulateRecord(stringArray []string) {
-	sd.uniqueID = stringArray[0]
-	sd.title = stringArray[1]
-	sd.firstName = stringArray[2]
-	sd.initial = stringArray[3]
-	sd.lastName = stringArray[4]
-	sd.address1 = stringArray[5]
-	sd.address2 = stringArray[6]
-	sd.city = stringArray[7]
-	sd.state = stringArray[8]
-	sd.zipcode = stringArray[9]
-	sd.zipcode4 = stringArray[10]
-	sd.countyName = stringArray[11]
-	sd.geoLevel = stringArray[12]
-	sd.latitude = stringArray[13]
-	sd.longitude = stringArray[14]
-	sd.geohash9 = stringArray[15]
-	sd.geohash5 = stringArray[16]
-	sd.msa = stringArray[17]
-	sd.cbsa = stringArray[18]
-	sd.fipsState = stringArray[19]
-	sd.fipsCounty = stringArray[20]
-	sd.censusTract = stringArray[21]
-	sd.censusBlockGroup = stringArray[22]
-	sd.censusBlock = stringArray[23]
-	sd.fullCensusBlockID = stringArray[24]
-	sd.firstInHousehold = stringArray[25]
-	sd.childPresent = stringArray[26]
-	sd.age = stringArray[27]
-	sd.homePhone = stringArray[28]
-	sd.estimatedIncome = stringArray[29]
-	sd.lengthOfResidence = stringArray[30]
-	sd.dwellingType = stringArray[31]
-	sd.homeownerType = stringArray[32]
-	sd.gender = stringArray[33]
-	sd.maritalStatus = stringArray[34]
-	sd.estimatedSealth = stringArray[35]
-	sd.estimatedHomeValue = stringArray[36]
-	sd.cellphone = stringArray[37]
-	sd.email1 = stringArray[38]
-	sd.email2 = stringArray[39]
-	sd.education = stringArray[40]
-	sd.businessOwnerStatus = stringArray[41]
-	sd.conservativePoliticalDonor = stringArray[42]
-	sd.liberalPoliticalDonor = stringArray[43]
-	sd.veteransDonor = stringArray[44]
-	sd.doNotCallList = stringArray[45]
-	sd.timezone = stringArray[46]
-	sd.birthYear = stringArray[47]
-	sd.dateUpdated = stringArray[48]
-
-}
-
 //global variables
 var (
 	inputFile             string
@@ -225,8 +118,8 @@ func processLine(inputLine string) (outputLine string) {
 	if numberOfParts != expectedNumberOfParts {
 		return outputLine
 	}
-	//singleRecords := &SdFormat{}
-	//singleRecords.PopulateRecord(parts)
+	singleRecords := &util.SdFormat{}
+	singleRecords.PopulateRecord(parts)
 	//partsSlice := parts[:]
 	/*
 		processNameAddress(parts)
