@@ -39,7 +39,7 @@ liberal_political_donor,veterans_donor,do_not_call_list,timezone,birth_year,date
 var (
 	inputFile             string
 	outputFile            string
-	stepCount             int
+	stepCount             = 50000
 	nameAndAddressParts   []string
 	debugMode             = false
 	expectedNumberOfParts = 49
@@ -56,9 +56,9 @@ func init() {
 		logrus.Fatal(err)
 	}
 	//TODO: this doesn't work.  Fix parsing of these values
-	inputFile = viper.GetString("inputFilename")
-	outputFile = viper.GetString("outputFilename")
-	stepCount = viper.GetInt("stepCount")
+	//inputFile = viper.GetString("inputFilename")
+	//outputFile = viper.GetString("outputFilename")
+	//stepCount = viper.GetInt("stepCount")
 	logrus.Info("Input file:", inputFile)
 	logrus.Info("Output file:", outputFile)
 	logrus.Info("stepCount:", stepCount)
@@ -113,24 +113,18 @@ func processLine(inputLine string) (outputLine string) {
 	//logrus.Debug(inputLine)
 	parts := strings.Split(inputLine, "\t")
 	numberOfParts := len(parts)
-	fmt.Println("numberOfParts", numberOfParts)
+	//fmt.Println("numberOfParts", numberOfParts)
 	//logrus.Info("Number of parts: ", numberOfParts)
 	if numberOfParts != expectedNumberOfParts {
 		return outputLine
 	}
 	singleRecords := &util.SdFormat{}
 	singleRecords.PopulateRecord(parts)
-	//partsSlice := parts[:]
-	/*
-		processNameAddress(parts)
-		processGeoHousehold(parts)
-		processAgePhoneEducation(parts)
-		processBusinessOwnerDataLoaded(parts)
-	*/
 	return outputLine
 }
 
 func processFile() {
+	defer util.TimeTrack(time.Now(), "processFile()")
 	inputFile := "/Users/abeusher/Desktop/sdformat/sample_people2018.tsv"
 	outputFile := "/Users/abeusher/Desktop/sdformat/output_people2018.tsv"
 	inFile, err := os.Open(inputFile)
@@ -143,7 +137,7 @@ func processFile() {
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
-	stepCount = 10000
+	stepCount = 5000
 	for scanner.Scan() {
 		lineCounter++
 		if lineCounter%stepCount == 0 {
@@ -156,16 +150,17 @@ func processFile() {
 		inputLine := scanner.Text()
 		inputLine = strings.ToUpper(inputLine)
 		newLine := processLine(inputLine)
-		if newLine == "" {
-			//error condion
+		if false {
+			// false can never equal true.  I'm just using this to hold variables for future use.
 			fmt.Println(outputFile)
+			fmt.Println(newLine)
+
 		}
 	}
 	fmt.Println(lineCounter, " lines processed")
 }
 
 func main() {
-	defer util.TimeTrack(time.Now(), "main()")
 	logrus.Debug("Running main() in process_file.go")
 	processFile()
 	logrus.Info("All done.")
