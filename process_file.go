@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abeusher/sdformat/util"
+	util "github.com/abeusher/dataprocessing"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -88,6 +88,60 @@ type SdFormat struct {
 	dateUpdated                string
 }
 
+//Populates an SdFormat struct using an array of length 49 with all string values as inputs
+func (sd *SdFormat) PopulateRecord(stringArray []string) {
+	sd.uniqueID = stringArray[0]
+	sd.title = stringArray[1]
+	sd.firstName = stringArray[2]
+	sd.initial = stringArray[3]
+	sd.lastName = stringArray[4]
+	sd.address1 = stringArray[5]
+	sd.address2 = stringArray[6]
+	sd.city = stringArray[7]
+	sd.state = stringArray[8]
+	sd.zipcode = stringArray[9]
+	sd.zipcode4 = stringArray[10]
+	sd.countyName = stringArray[11]
+	sd.geoLevel = stringArray[12]
+	sd.latitude = stringArray[13]
+	sd.longitude = stringArray[14]
+	sd.geohash9 = stringArray[15]
+	sd.geohash5 = stringArray[16]
+	sd.msa = stringArray[17]
+	sd.cbsa = stringArray[18]
+	sd.fipsState = stringArray[19]
+	sd.fipsCounty = stringArray[20]
+	sd.censusTract = stringArray[21]
+	sd.censusBlockGroup = stringArray[22]
+	sd.censusBlock = stringArray[23]
+	sd.fullCensusBlockID = stringArray[24]
+	sd.firstInHousehold = stringArray[25]
+	sd.childPresent = stringArray[26]
+	sd.age = stringArray[27]
+	sd.homePhone = stringArray[28]
+	sd.estimatedIncome = stringArray[29]
+	sd.lengthOfResidence = stringArray[30]
+	sd.dwellingType = stringArray[31]
+	sd.homeownerType = stringArray[32]
+	sd.gender = stringArray[33]
+	sd.maritalStatus = stringArray[34]
+	sd.estimatedSealth = stringArray[35]
+	sd.estimatedHomeValue = stringArray[36]
+	sd.cellphone = stringArray[37]
+	sd.email1 = stringArray[38]
+	sd.email2 = stringArray[39]
+	sd.education = stringArray[40]
+	sd.businessOwnerStatus = stringArray[41]
+	sd.conservativePoliticalDonor = stringArray[42]
+	sd.liberalPoliticalDonor = stringArray[43]
+	sd.veteransDonor = stringArray[44]
+	sd.doNotCallList = stringArray[45]
+	sd.timezone = stringArray[46]
+	sd.birthYear = stringArray[47]
+	sd.dateUpdated = stringArray[48]
+
+}
+
 //global variables
 var (
 	inputFile             string
@@ -95,7 +149,7 @@ var (
 	stepCount             int
 	nameAndAddressParts   []string
 	debugMode             = false
-	expectedNumberOfParts = 413
+	expectedNumberOfParts = 49
 )
 
 func init() {
@@ -164,13 +218,15 @@ func processBusinessOwnerDataLoaded(parts []string) {
 func processLine(inputLine string) (outputLine string) {
 	outputLine = ""
 	//logrus.Debug(inputLine)
-	parts := strings.Split(inputLine, ",")
+	parts := strings.Split(inputLine, "\t")
 	numberOfParts := len(parts)
 	fmt.Println("numberOfParts", numberOfParts)
 	//logrus.Info("Number of parts: ", numberOfParts)
 	if numberOfParts != expectedNumberOfParts {
 		return outputLine
 	}
+	//singleRecords := &SdFormat{}
+	//singleRecords.PopulateRecord(parts)
 	//partsSlice := parts[:]
 	/*
 		processNameAddress(parts)
@@ -182,8 +238,8 @@ func processLine(inputLine string) (outputLine string) {
 }
 
 func processFile() {
-	inputFile := "/Users/abeusher/code/sdformat/sample_people2018.tsv"
-	outputFile := "/Users/abeusher/code/sdformat/output_people2018.tsv"
+	inputFile := "/Users/abeusher/Desktop/sdformat/sample_people2018.tsv"
+	outputFile := "/Users/abeusher/Desktop/sdformat/output_people2018.tsv"
 	inFile, err := os.Open(inputFile)
 	logrus.Info("Processing inputFile:", inputFile)
 	startTime := time.Now()
@@ -194,6 +250,7 @@ func processFile() {
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
+	stepCount = 10000
 	for scanner.Scan() {
 		lineCounter++
 		if lineCounter%stepCount == 0 {
@@ -208,12 +265,14 @@ func processFile() {
 		newLine := processLine(inputLine)
 		if newLine == "" {
 			//error condion
+			fmt.Println(outputFile)
 		}
 	}
 	fmt.Println(lineCounter, " lines processed")
 }
 
 func main() {
+	defer util.TimeTrack(time.Now(), "main()")
 	logrus.Debug("Running main() in process_file.go")
 	processFile()
 	logrus.Info("All done.")
