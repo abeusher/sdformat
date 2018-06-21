@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"compress/gzip"
+
 	util "github.com/abeusher/dataprocessing"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -72,21 +74,22 @@ func processFile() {
 	defer inFile.Close()
 	util.Check(err)
 
+	scanner := bufio.NewScanner(inFile)
+
 	//version for reading a compressed gzip file
-	/*
-		gr, err := gzip.NewReader(f)
-		check(err)
+	if strings.HasSuffix(inputFile, ".gz") {
+		gr, err := gzip.NewReader(inFile)
+		util.Check(err)
 		defer gr.Close()
-		scanner := bufio.NewScanner(gr)
-		scanner.Split(bufio.ScanLines)
-	*/
+		scanner = bufio.NewScanner(gr)
+	}
+
 	outFile, err := os.Create(outputFile)
 	util.Check(err)
 
 	logrus.Info("Processing inputFile:", inputFile)
 	startTime := time.Now()
 
-	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
 	stepCount = 200000

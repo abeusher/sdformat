@@ -1,4 +1,9 @@
 stepCount = 200000
+#inputFile = "e:/data/sample_people2018.tsv"
+#outputFile = "e:/data/output_people2018.tsv"
 
-inputFilename = "/Users/abeusher/code/sdformat/sample_people2018.tsv"
-outputFilename = "/Users/abeusher/code/sdformat/output_people2018.tsv"
+#inputFile = "e:/data/999_lines_sdformat.tsv"
+#outputFile = "e:/data/output.tsv"
+
+inputFile = "e:/data/0076_people2018.tsv.gz"
+outputFile = "e:/data/output_0076_people_geohash9.tsv"
