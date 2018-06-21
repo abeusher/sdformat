@@ -11,6 +11,7 @@ import (
 	util "github.com/abeusher/dataprocessing"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	//"path/filepath"
 )
 
 /*
@@ -19,27 +20,15 @@ This is fun :)
 
 TODO:
 Create method to make a 'new' SdFormat struct
-Create method to populate SdFormat struct
-Create method to compute geohash9 with given SdFormat object
 
-*/
 
-/*
-headers = 'sd_unique_id,title,first_name,initial,last_name,
-address1,address2,city,state,zipcode,zipcode_4,county_name,geo_level,
-latitude,longitude,geohash8,geohash5,msa,cbsa,fips_state,fips_county,census_tract,
-census_block_group,census_block,full_census_block_id,first_in_household,
-child_present,age,home_phone,estimated_income,length_of_residence,dwelling_type,
-homeowner_type,gender,marital_status,estimated_wealth,estimated_home_value,
-cellphone,email1,email2,education,business_owner_status,conservative_political_donor,
-liberal_political_donor,veterans_donor,do_not_call_list,timezone,birth_year,date_updated'.upper().replace(',','\t')
 */
 
 //global variables
 var (
 	inputFile             string
 	outputFile            string
-	stepCount             = 50000
+	stepCount             = 100000
 	nameAndAddressParts   []string
 	debugMode             = false
 	expectedNumberOfParts = 49
@@ -49,7 +38,7 @@ func init() {
 	//global configuration of variables
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	configFile, err := os.Open("/Users/abeusher/code/sdformat/config.yml")
+	configFile, err := os.Open("config.yml")
 	viper.ReadConfig(configFile)
 	if err != nil {
 		logrus.Fatal("Failed to read config file")
@@ -118,15 +107,16 @@ func processLine(inputLine string) (outputLine string) {
 	if numberOfParts != expectedNumberOfParts {
 		return outputLine
 	}
-	singleRecords := &util.SdFormat{}
-	singleRecords.PopulateRecord(parts)
+	singleRecord := &util.SdFormat{}
+	singleRecord.PopulateRecord(parts)
+	singleRecord.ComputeGeohash()
 	return outputLine
 }
 
 func processFile() {
 	defer util.TimeTrack(time.Now(), "processFile()")
-	inputFile := "/Users/abeusher/Desktop/sdformat/sample_people2018.tsv"
-	outputFile := "/Users/abeusher/Desktop/sdformat/output_people2018.tsv"
+	inputFile := "e:/data/sample_people2018.tsv"
+	outputFile := "e:/data/output_people2018.tsv"
 	inFile, err := os.Open(inputFile)
 	logrus.Info("Processing inputFile:", inputFile)
 	startTime := time.Now()
@@ -137,7 +127,7 @@ func processFile() {
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
-	stepCount = 5000
+	stepCount = 200000
 	for scanner.Scan() {
 		lineCounter++
 		if lineCounter%stepCount == 0 {
@@ -149,6 +139,8 @@ func processFile() {
 		}
 		inputLine := scanner.Text()
 		inputLine = strings.ToUpper(inputLine)
+		//fmt.Println(lineCounter)
+		//fmt.Println("_____________________")
 		newLine := processLine(inputLine)
 		if false {
 			// false can never equal true.  I'm just using this to hold variables for future use.
