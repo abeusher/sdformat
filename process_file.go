@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -14,116 +13,79 @@ import (
 	//"path/filepath"
 )
 
-/*
-
-This is fun :)
-
-TODO:
-Create method to make a 'new' SdFormat struct
-
-
-*/
-
 //global variables
 var (
+	configurationFilePath = `E:\goworkspace\src\github.com\abeusher\sdformat\`
 	inputFile             string
 	outputFile            string
-	stepCount             = 100000
+	stepCount             int
 	nameAndAddressParts   []string
 	debugMode             = false
 	expectedNumberOfParts = 49
+	badAddress            = make(map[string]string)
 )
 
 func init() {
 	//global configuration of variables
 	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	configFile, err := os.Open("config.yml")
-	viper.ReadConfig(configFile)
-	if err != nil {
-		logrus.Fatal("Failed to read config file")
-		logrus.Fatal(err)
-	}
+	fmt.Println(configurationFilePath)
+	viper.AddConfigPath(configurationFilePath)
+	err := viper.ReadInConfig()
+	util.Check(err)
 	//TODO: this doesn't work.  Fix parsing of these values
-	//inputFile = viper.GetString("inputFilename")
-	//outputFile = viper.GetString("outputFilename")
-	//stepCount = viper.GetInt("stepCount")
+	inputFile = viper.GetString("inputFile")
+	outputFile = viper.GetString("outputFile")
+	stepCount = viper.GetInt("stepCount")
 	logrus.Info("Input file:", inputFile)
 	logrus.Info("Output file:", outputFile)
 	logrus.Info("stepCount:", stepCount)
-	defer configFile.Close()
 	logrus.SetLevel(logrus.InfoLevel)
 	if debugMode {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 }
 
-func processNameAddress(parts []string) {
-	var nameAddressItems []string
-	logrus.Debug("processNameAddress()")
-	baseInt := 1000000000
-	randomInt := rand.Intn(500000)
-	totalInt := baseInt + randomInt
-	/*
-		uniqueID := string(totalInt)
-		firstName := parts[2]
-		middleName := parts[3]
-		lastName := parts[4]
-		namePrefix := parts[6]
-		address1 := parts[14]
-		address2 := parts[15]
-		apartment := parts[15]
-
-		var data []string
-		data = append(data, []string{firstName, lastName, namePrefix}...)
-	*/
-	if false {
-		fmt.Println(nameAddressItems)
-		fmt.Println(totalInt)
-	}
-
-}
-
-func processGeoHousehold(parts []string) {
-	//TODO
-}
-
-func processAgePhoneEducation(parts []string) {
-	//TODO
-}
-
-func processBusinessOwnerDataLoaded(parts []string) {
-	//TODO
-}
-
 //processLine takes a line of text and processes it into SD format
-func processLine(inputLine string) (outputLine string) {
-	outputLine = ""
+func processLine(inputLine string) util.SdFormat {
 	//logrus.Debug(inputLine)
-	parts := strings.Split(inputLine, "\t")
+	inputLineUpperCase := strings.ToUpper(inputLine)
+	parts := strings.Split(inputLineUpperCase, "\t")
 	numberOfParts := len(parts)
 	//fmt.Println("numberOfParts", numberOfParts)
 	//logrus.Info("Number of parts: ", numberOfParts)
 	if numberOfParts != expectedNumberOfParts {
-		return outputLine
+		sd := util.SdFormat{}
+		return sd
 	}
-	singleRecord := &util.SdFormat{}
-	singleRecord.PopulateRecord(parts)
-	singleRecord.ComputeGeohash()
-	return outputLine
+	//TODO: is there an advantage to using util.SdFormat via a pointer?
+	record := util.SdFormat{}
+	record.PopulateRecord(parts)
+	record.ComputeGeohash()
+	//return inputLine
+	return record
 }
 
 func processFile() {
 	defer util.TimeTrack(time.Now(), "processFile()")
-	inputFile := "e:/data/sample_people2018.tsv"
-	outputFile := "e:/data/output_people2018.tsv"
+	//simple non compressed TSV file version
 	inFile, err := os.Open(inputFile)
+	defer inFile.Close()
+	util.Check(err)
+
+	//version for reading a compressed gzip file
+	/*
+		gr, err := gzip.NewReader(f)
+		check(err)
+		defer gr.Close()
+		scanner := bufio.NewScanner(gr)
+		scanner.Split(bufio.ScanLines)
+	*/
+	outFile, err := os.Create(outputFile)
+	util.Check(err)
+
 	logrus.Info("Processing inputFile:", inputFile)
 	startTime := time.Now()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	defer inFile.Close()
+
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
@@ -138,14 +100,9 @@ func processFile() {
 			//logrus.Info(msg)
 		}
 		inputLine := scanner.Text()
-		inputLine = strings.ToUpper(inputLine)
-		//fmt.Println(lineCounter)
-		//fmt.Println("_____________________")
-		newLine := processLine(inputLine)
-		if false {
-			// false can never equal true.  I'm just using this to hold variables for future use.
-			fmt.Println(outputFile)
-			fmt.Println(newLine)
+		record := processLine(inputLine)
+		outFile.WriteString(record.ToString() + "\n")
+		if record.Zipcode == "2" {
 
 		}
 	}
