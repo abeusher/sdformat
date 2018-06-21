@@ -92,7 +92,8 @@ func processFile(inputFilename string, linesFromFileChannel chan string) {
 		inputLine := scanner.Text()
 		linesFromFileChannel <- inputLine
 	}
-
+	close(linesFromFileChannel)
+	logrus.Info("Done loading content via function processFile()")
 }
 
 /*
@@ -144,10 +145,10 @@ func main() {
 
 	concurrency := 1000
 	wg := new(sync.WaitGroup)
-	//wg.Add(concurrency)
+	wg.Add(concurrency)
 	for i := 0; i < concurrency; i++ {
 		// parallel routine for lookups
-		wg.Add(1)
+		//wg.Add(1)
 		go doWork(linesFromFileChannel, wg, resultsChannel)
 	}
 
