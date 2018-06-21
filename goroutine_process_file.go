@@ -3,12 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	util "github.com/abeusher/dataprocessing"
+	"github.com/mmcloughlin/geohash"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -43,6 +44,7 @@ var (
 	nameAndAddressParts   []string
 	debugMode             = false
 	expectedNumberOfParts = 49
+	concurrency           = 100
 )
 
 func init() {
@@ -67,44 +69,6 @@ func init() {
 	if debugMode {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
-}
-
-func processNameAddress(parts []string) {
-	var nameAddressItems []string
-	logrus.Debug("processNameAddress()")
-	baseInt := 1000000000
-	randomInt := rand.Intn(500000)
-	totalInt := baseInt + randomInt
-	/*
-		uniqueID := string(totalInt)
-		firstName := parts[2]
-		middleName := parts[3]
-		lastName := parts[4]
-		namePrefix := parts[6]
-		address1 := parts[14]
-		address2 := parts[15]
-		apartment := parts[15]
-
-		var data []string
-		data = append(data, []string{firstName, lastName, namePrefix}...)
-	*/
-	if false {
-		fmt.Println(nameAddressItems)
-		fmt.Println(totalInt)
-	}
-
-}
-
-func processGeoHousehold(parts []string) {
-	//TODO
-}
-
-func processAgePhoneEducation(parts []string) {
-	//TODO
-}
-
-func processBusinessOwnerDataLoaded(parts []string) {
-	//TODO
 }
 
 //processLine takes a line of text and processes it into SD format
@@ -138,7 +102,18 @@ func processFile() {
 	scanner.Split(bufio.ScanLines)
 	lineCounter := 0
 	stepCount = 5000
+	//
+	//
+	//
+	//
+	//a work  channel
+	workQueue := make(chan string)
+	// We need to know when everyone is done so we can exit.
+	complete := make(chan bool)
+	//
+	//
 	for scanner.Scan() {
+		//TODO: change this counter to an 'atomic' counter
 		lineCounter++
 		if lineCounter%stepCount == 0 {
 			recordsPerSecond, secondsRemaining := util.CalculateTimeRemaining(startTime, lineCounter, 229848)
@@ -147,17 +122,59 @@ func processFile() {
 			logrus.Info("secondsRemaining: ", secondsRemaining)
 			//logrus.Info(msg)
 		}
-		inputLine := scanner.Text()
-		inputLine = strings.ToUpper(inputLine)
-		newLine := processLine(inputLine)
-		if false {
-			// false can never equal true.  I'm just using this to hold variables for future use.
-			fmt.Println(outputFile)
-			fmt.Println(newLine)
+		//inputLine := scanner.Text()
+		workQueue <- scanner.Text()
+		/*
+			inputLine = strings.ToUpper(inputLine)
+			newLine := processLine(inputLine)
+			if false {
+				// false can never equal true.  I'm just using this to hold variables for future use.
+				fmt.Println(outputFile)
+				fmt.Println(newLine)
 
-		}
+			}
+		*/
 	}
+	for i := 0; i < concurrency; i++ {
+		go doWork(workQueue, complete)
+	}
+
+	// Wait for everyone to finish.
+	for i := 0; i < concurrency; i++ {
+		<-complete
+	}
+
 	fmt.Println(lineCounter, " lines processed")
+}
+
+func doWork(queue chan string, complete chan bool) {
+	for line := range queue {
+		// Do the work with the line.
+		result := strings.Split(line, ",")
+		//uniqueID := result[0]
+		latitude := result[13]
+		longitude := result[14]
+		lat, err := strconv.ParseFloat(latitude, 64)
+		if err != nil {
+			//skip this for now
+			//logrus.Fatal(err)
+		}
+		lng, err := strconv.ParseFloat(longitude, 64)
+		if err != nil {
+			// skip this for now
+			//logrus.Fatal(err)
+		}
+		geo8 := geohash.Encode(lat, lng)
+		if geo8 == "" {
+			continue
+		}
+		//TODO: make this an atomic counter
+		//lineCount++
+	}
+
+	// Let the main process know we're done.
+	complete <- true
+
 }
 
 func main() {
